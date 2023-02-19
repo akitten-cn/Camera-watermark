@@ -1,0 +1,2 @@
+# Camera-watermark
+使用python实现当前流行的添加相机机型和拍摄参数的水印效果
