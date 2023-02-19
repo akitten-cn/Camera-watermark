@@ -1,0 +1,27 @@
+base:
+    font: ./fonts/SourceHanSansCN-Light.otf
+    bold_font: ./fonts/SourceHanSansCN-Bold.otf
+    input_dir: ./input
+    output_dir: ./output
+    quality: 100
+    
+logo:
+    enable: true
+    makes:
+        nikon:
+            id: NIKON
+            path: ./logos/nikon.png
+        canon:
+            id: Canon
+            path: ./logos/canon.png
+        sony:
+            id: SONY
+            path: ./logos/sony.png
+        pentax:
+            id: FUJIFILM
+            path: ./logos/fujifilm.png
+        lumix:
+            id: Panasonic
+            path: ./logos/lumix.png
+
+user: PHOTO BY 胖橘
