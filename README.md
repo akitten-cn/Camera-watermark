@@ -1,11 +1,15 @@
 # Camera-watermark
 使用python实现当前流行的添加相机机型和拍摄参数的水印效果
+
 可以在不改变原始照片的情况下，将照片的重要信息（如相机参数和拍摄信息）添加到照片上，以便于查看和分享。
 
 需要用到的包：
 - pillow==9.3.0
 - pyyaml==6.0
 - piexif
+```
+pip install -r requirements.txt
+```
 
 文件夹说明：
 - input:存放需要批量处理的照片
