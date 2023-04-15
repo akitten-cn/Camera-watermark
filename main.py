@@ -79,68 +79,73 @@ def append_logo(exif_img, exif):
 
 # 生成元信息图片
 def make_exif_image(exif):
-    font_ratio = .07
-    all_ratio = .13
-    original_width = exif['ExifImageWidth']
-    original_height = exif['ExifImageHeight']
-    original_ratio = original_width / original_height
-    if original_ratio > 1:
+    try:
         font_ratio = .07
-        all_ratio = .1
+        all_ratio = .13
+        original_width = exif['ExifImageWidth']
+        original_height = exif['ExifImageHeight']
+        original_ratio = original_width / original_height
+        if original_ratio > 1:
+            font_ratio = .07
+            all_ratio = .1
 
-    # 型号
-    model = exif['Model']
-    make = exif['Make']
-    model_mask = bold_font.getmask(model)
-    user_mask = font.getmask(user)
-    brand_img = Image.new('RGB',
-                          (max(model_mask.size[0], user_mask.size[0]),
-                           model_mask.size[1] + user_mask.size[1] + GAP_PIXEL * 3),
-                          color='white')
-    brand_draw = ImageDraw.Draw(brand_img)
-    brand_draw.text((0, 0), model, font=bold_font, fill='black')
-    brand_draw.text((0, model_mask.size[1] + GAP_PIXEL), user, font=font, fill='gray')
+        # 型号
+        model = exif['Model']
+        make = exif['Make']
+        model_mask = bold_font.getmask(model)
+        user_mask = font.getmask(user)
+        brand_img = Image.new('RGB',
+                            (max(model_mask.size[0], user_mask.size[0]),
+                            model_mask.size[1] + user_mask.size[1] + GAP_PIXEL * 3),
+                            color='white')
+        brand_draw = ImageDraw.Draw(brand_img)
+        brand_draw.text((0, 0), model, font=bold_font, fill='black')
+        brand_draw.text((0, model_mask.size[1] + GAP_PIXEL), user, font=font, fill='gray')
 
-    # 参数
-    focal_length = str(int(exif['FocalLengthIn35mmFilm'])) + 'mm'
-    f_number = 'F' + str(exif['FNumber'])
-    exposure_time = str(exif['ExposureTime'].real)
-    iso = 'ISO' + str(exif['ISOSpeedRatings'])
-    shot_param = '  '.join((focal_length, f_number, exposure_time, iso))
+        # 参数
+        focal_length_in_35mm_film = exif.get('FocalLengthIn35mmFilm', exif['FocalLength'])
+        focal_length = str(int(focal_length_in_35mm_film)) + 'mm'
+        f_number = 'F' + str(exif['FNumber'])
+        exposure_time = str(exif['ExposureTime'].real)
+        iso = 'ISO' + str(exif['ISOSpeedRatings'])
+        shot_param = '  '.join((focal_length, f_number, exposure_time, iso))
 
-    original_date_time = datetime.strftime(parse_datetime(exif['DateTimeOriginal']), '%Y-%m-%d %H:%M')
-    shot_param_mask = bold_font.getmask(shot_param)
-    original_date_time_mask = font.getmask(original_date_time)
+        original_date_time = datetime.strftime(parse_datetime(exif['DateTimeOriginal']), '%Y-%m-%d %H:%M')
+        shot_param_mask = bold_font.getmask(shot_param)
+        original_date_time_mask = font.getmask(original_date_time)
 
-    shot_param_img = Image.new('RGB',
-                               (max(shot_param_mask.size[0], original_date_time_mask.size[0])+GAP_PIXEL*2,
-                                shot_param_mask.size[1] + original_date_time_mask.size[1] + GAP_PIXEL * 3),
-                               color='white')
+        shot_param_img = Image.new('RGB',
+                                (max(shot_param_mask.size[0], original_date_time_mask.size[0])+GAP_PIXEL*2,
+                                    shot_param_mask.size[1] + original_date_time_mask.size[1] + GAP_PIXEL * 3),
+                                color='white')
 
-    shot_param_draw = ImageDraw.Draw(shot_param_img)
-    shot_param_draw.line((0,GAP_PIXEL, 0,shot_param_mask.size[1] + original_date_time_mask.size[1] + GAP_PIXEL*2), fill='gray', width=30)
-    shot_param_draw.text((GAP_PIXEL, 0), shot_param, font=bold_font, fill='black')
-    shot_param_draw.text((GAP_PIXEL, shot_param_mask.size[1] + GAP_PIXEL), original_date_time, font=font, fill='gray')
+        shot_param_draw = ImageDraw.Draw(shot_param_img)
+        shot_param_draw.line((0,GAP_PIXEL, 0,shot_param_mask.size[1] + original_date_time_mask.size[1] + GAP_PIXEL*2), fill='gray', width=30)
+        shot_param_draw.text((GAP_PIXEL, 0), shot_param, font=bold_font, fill='black')
+        shot_param_draw.text((GAP_PIXEL, shot_param_mask.size[1] + GAP_PIXEL), original_date_time, font=font, fill='gray')
 
-    exif_img = Image.new('RGB', (original_width, math.floor(all_ratio * original_width)), color='white')
-    left_margin = BORDER_PIXEL
-    right_margin = BORDER_PIXEL
+        exif_img = Image.new('RGB', (original_width, math.floor(all_ratio * original_width)), color='white')
+        left_margin = BORDER_PIXEL
+        right_margin = BORDER_PIXEL
 
-    brand_img = brand_img.resize(
-        (math.floor(brand_img.width / brand_img.height * math.floor(original_width * font_ratio)),
-         math.floor(original_width * font_ratio)), Image.Resampling.LANCZOS)
-    shot_param_img = shot_param_img.resize(
-        (math.floor(shot_param_img.width / shot_param_img.height * math.floor(original_width * font_ratio)),
-         math.floor(original_width * font_ratio)), Image.Resampling.LANCZOS)
-    if logo_enable:
-        logo = append_logo(exif_img, exif)
-        exif_img.paste(logo, (exif_img.width - logo.width - GAP_PIXEL//4 - shot_param_img.width - right_margin, math.floor((all_ratio - font_ratio) / 2 * original_width)))
+        brand_img = brand_img.resize(
+            (math.floor(brand_img.width / brand_img.height * math.floor(original_width * font_ratio)),
+            math.floor(original_width * font_ratio)), Image.Resampling.LANCZOS)
+        shot_param_img = shot_param_img.resize(
+            (math.floor(shot_param_img.width / shot_param_img.height * math.floor(original_width * font_ratio)),
+            math.floor(original_width * font_ratio)), Image.Resampling.LANCZOS)
+        if logo_enable:
+            logo = append_logo(exif_img, exif)
+            exif_img.paste(logo, (exif_img.width - logo.width - GAP_PIXEL//4 - shot_param_img.width - right_margin, math.floor((all_ratio - font_ratio) / 2 * original_width)))
 
-    exif_img.paste(brand_img, (left_margin*2, math.floor((all_ratio - font_ratio) / 2 * original_width)))
-    exif_img.paste(shot_param_img, (exif_img.width - shot_param_img.width - right_margin,
-                                    math.floor((all_ratio - font_ratio) / 2 * original_width)))
+        exif_img.paste(brand_img, (left_margin*2, math.floor((all_ratio - font_ratio) / 2 * original_width)))
+        exif_img.paste(shot_param_img, (exif_img.width - shot_param_img.width - right_margin,
+                                        math.floor((all_ratio - font_ratio) / 2 * original_width)))
 
-    return exif_img.resize((original_width, math.floor(all_ratio * original_width)), Image.Resampling.LANCZOS)
+        return exif_img.resize((original_width, math.floor(all_ratio * original_width)), Image.Resampling.LANCZOS)
+    except KeyError:
+        # 如果缺少任何关键信息，返回一个空的Image对象
+        return Image.new('RGB', (0, 0), color='white')
 
 
 # 拼接原图片和 exif 图片
@@ -167,7 +172,7 @@ if __name__ == '__main__':
         # 打开图片
         img = Image.open(os.path.join(input_dir, file))
         # 生成 exif 图片
-        exif,exif_dict = get_exif(img)
+        exif, exif_dict = get_exif(img)
         print(exif)
         if 'Orientation' in exif:
             if exif['Orientation'] == 3:
@@ -178,7 +183,14 @@ if __name__ == '__main__':
                 img = img.transpose(Image.ROTATE_90)
         exif['ExifImageWidth'], exif['ExifImageHeight'] = img.width, img.height
         exif_img = make_exif_image(exif)
-        # 拼接两张图片
-        cnt_img = concat_image(img, exif_img)
+
+        # 如果exif_img不为空，才进行拼接
+        if exif_img.size != (0, 0):
+            img.paste(exif_img, (0, img.height - exif_img.height))
+
+        # 写入exif信息
+        output_img_bytes = img.tobytes()
+        output_img = Image.frombytes('RGB', img.size, output_img_bytes)
         exif_bytes = piexif.dump(exif_dict)
-        cnt_img.save(os.path.join(output_dir, file), quality=quality,exif=exif_bytes)
+        output_img.save(os.path.join(output_dir, file), 'JPEG', quality=quality, exif=exif_bytes)
+
